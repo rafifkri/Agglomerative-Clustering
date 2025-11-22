@@ -54,7 +54,7 @@ df.info()
 Fungsi: Menampilkan tipe data, jumlah baris & kolom.
 Tujuan: Mengetahui struktur dataset untuk menentukan langkah preprocessing.
 
-program 4 - Hasil Statistik Dekriptif Kolom Numerik DataFrame
+### program 4 - Hasil Statistik Dekriptif Kolom Numerik DataFrame
 
 ```python
 df.describe()
@@ -62,7 +62,7 @@ df.describe()
 Fungsi: Menghasilkan statistik deskriptif.
 Tujuan: Membantu memahami distribusi numerik (mean, std, min, max).
 
-program 5 - Cek missing value
+### program 5 - Cek missing value
 
 ```python
 df.isna().sum()
@@ -72,7 +72,7 @@ df.isna().sum()
 Fungsi: Menghitung missing value.
 Tujuan: Menentukan apakah perlu dilakukan imputasi/cleaning.
 
-program 6 - one- hot encoding
+### program 6 - one- hot encoding
 
 ```python
 categorical_cols_to_encode = ['Job_Title', 'Education_Level', 'Risk_Category']
@@ -128,7 +128,7 @@ print(df_encoded.head())
 Fungsi:
 * Menampilkan data setelah transformasi untuk memastikan encoding berjalan benat
 
-program 7 - standarisasi(scaling)
+### program 7 - standarisasi(scaling)
 
 ```python
 numerical_cols_to_scale = [
@@ -207,7 +207,7 @@ Fungsi:
 * Mengecek bentuk dataframe setelah scaling
 * Melihat perubahan nilai setelah distribusinya disetarakan
 
-program 8 - Normalisasi
+### program 8 - Normalisasi
 
 ```python
 min_max_scaler = MinMaxScaler()
@@ -260,7 +260,7 @@ df_normalized_numerical.head()
 ```
 fungsi: Untuk melihat data yang sudah dinormalisasi (semua dalam range 0–1).
 
-program 9 - menggabungkan fitur numerik + katerogikal
+### program 9 - menggabungkan fitur numerik + katerogikal
 
 ```python
 df_processed = pd.concat(
@@ -288,7 +288,7 @@ a. menampilkan bentuk shape
 print("Bentuk data akhir:", df_processed.shape)
 ```
 
-program 10 - dendogram 
+### program 10 - dendogram 
 ```python
 Z = linkage(df_processed, method='ward')
 print("Matriks linkage berhasil dihitung. Bentuk:", Z.shape)
@@ -319,7 +319,7 @@ Tujuan:
 * Menggunakan metode Ward pada linkage untuk membentuk cluster dengan meminimalkan varians dalam cluster.
 * Memvisualisasikan struktur hierarki cluster melalui dendrogram, agar bisa melihat bagaimana sampel digabung step-by-step dan menentukan di mana “cut” cluster terbaik.
 
-program 11 - pemilihan Jumlah Cluster Optimal Berdasarkan Lompatan Jarak
+### program 11 - pemilihan Jumlah Cluster Optimal Berdasarkan Lompatan Jarak
 
 ```python
 merge_distances = Z[:, 2]
@@ -340,6 +340,8 @@ else:
 n_clusters = 4
 print(f"\nMelanjutkan dengan jumlah klaster yang diasumsikan: {n_clusters}")
 ```
+<img width="606" height="77" alt="image" src="https://github.com/user-attachments/assets/e135e456-fc51-48c6-a228-7017c38c27ef" />
+
 Fungsi Program
 * Kode ini secara otomatis menentukan jumlah klaster optimal dari hasil hierarchical clustering dengan cara:
 * Mengambil merge distances dari matriks linkage Z.
@@ -357,6 +359,7 @@ a. mengambil jarak dari penggabungan linkage
 ```python
 merge_distances = Z[:, 2]
 ```
+Tujuan:
 * Mengambil kolom ke-3 (index 2) dari linkage matrix.
 * Berisi jarak saat dua cluster digabung.
 * Semakin besar nilainya, semakin “jauh” dua cluster tersebut.
@@ -365,9 +368,153 @@ b. menghitung lompatan jarak antar penggabungan
 ```python
 distance_jumps = [merge_distances[i+1] - merge_distances[i] for i in range(len(merge_distances)-1)]
 ```
-
-
+Tujuan:
+* Menghitung selisih jarak antar penggabungan berturut-turut.
+* Lompatan terbesar menandakan perubahan struktur klaster yang signifikan.
+* Digunakan untuk menentukan titik pemotongan dendrogram terbaik.
   
+c. Jika ada lompatan jarak → tentukan klaster optimal
+```python
+if distance_jumps:
+    max_jump_index = distance_jumps.index(max(distance_jumps))
+    optimal_cut_distance = merge_distances[max_jump_index]
+```
+Tujuan:
+* Mengecek apakah ada lompatan jarak.
+* Mencari indeks lompatan terbesar.
+* Menentukan jarak pemotongan dendrogram berdasarkan indeks tersebut.
+
+d. Membentuk klaster berdasarkan pemotongan optimal
+```python
+clusters_at_optimal_cut = fcluster(Z, optimal_cut_distance, criterion='distance')
+suggested_num_clusters = len(set(clusters_at_optimal_cut))
+```
+Tujuan:
+* clusters_at_optimal_cut = fcluster(Z, optimal_cut_distance, criterion='distance')
+* suggested_num_clusters = len(set(clusters_at_optimal_cut))
+
+e. Menampilkan rekomendasi hasil cluster
+```python
+print(f"Jumlah klaster optimal yang disarankan berdasarkan lompatan jarak terbesar: {suggested_num_clusters}")
+print(f"(Ini sesuai dengan pemotongan dendrogram pada jarak sekitar {optimal_cut_distance:.2f})")
+```
+Tujuan:
+Menampilkan jumlah klaster optimal secara terprogram.
+
+f. Jika tidak ada lompatan jarak
+```python
+else:
+    print("Tidak dapat menentukan klaster optimal secara terprogram menggunakan lompatan jarak.")
+    suggested_num_clusters = None
+```
+Tujuan:
+Jika tidak ada perubahan signifikan pada jarak penggabungan, program tidak dapat menentukan klaster optimal.
+
+g. Melanjutkan dengan jumlah cluster manual.
+```python
+n_clusters = 4
+print(f"\nMelanjutkan dengan jumlah klaster yang diasumsikan: {n_clusters}")
+```
+Tujuan:
+* Pengguna tetap bisa menjalankan clustering menggunakan jumlah klaster default (misalkan 4).
+* Berguna jika metode otomatis gagal.
+
+### program 12 - Melabeli data berdasarkan hasil klasterisasi Agglomerative Clustering.
+```python
+agglomerative_model = AgglomerativeClustering(n_clusters=n_clusters, metric='euclidean', linkage='ward')
+df_processed['Cluster'] = agglomerative_model.fit_predict(df_processed)
+print(f"Label klaster ditambahkan ke df_processed. Jumlah klaster: {n_clusters}")
+print("5 baris pertama dengan kolom 'Cluster' baru:")
+df_processed.head()
+```
+<img width="668" height="802" alt="image" src="https://github.com/user-attachments/assets/0bb892ec-dd16-4ff9-98c6-3bcca13cf63f" />
+
+Fungsi:
+* Melakukan proses agglomerative hierarchical clustering pada data yang sudah diproses.
+* Menggunakan parameter jumlah klaster (n_clusters) yang sudah ditentukan sebelumnya.
+* Menambahkan kolom baru bernama "Cluster" ke DataFrame (df_processed) berisi label klaster tiap baris.
+* Menampilkan hasil 5 baris pertama untuk memastikan proses clustering berhasil.
+
+Tujuan:
+* Mengelompokkan data ke dalam n klaster berdasarkan kedekatan jarak (similarity).
+* Memberikan informasi label klaster untuk setiap baris data agar dapat digunakan untuk analisis selanjutnya.
+
+a. Membuat model agglomerative clustering
+```python
+agglomerative_model = AgglomerativeClustering(
+    n_clusters=n_clusters, 
+    metric='euclidean', 
+    linkage='ward'
+)
+```
+Tujuan:
+* Membuat model Agglomerative Clustering.
+* n_clusters: menentukan jumlah kelompok yang ingin dibentuk.
+* metric='euclidean': menghitung jarak antar data menggunakan Euclidean distance.
+* linkage='ward': metode penggabungan untuk meminimalkan variansi dalam klaster.
+
+b, Melakukan Klaterisasi
+```python
+df_processed['Cluster'] = agglomerative_model.fit_predict(df_processed)
+```
+Fungsi:
+* Menjalankan proses klasterisasi pada seluruh data.
+* Menghasilkan label klaster untuk setiap baris.
+* Menyimpan hasilnya ke kolom baru 'Cluster'.
+
+c. Menampilkan Hasil Klasterisasi
+```python
+print(f"Label klaster ditambahkan ke df_processed. Jumlah klaster: {n_clusters}")
+print("5 baris pertama dengan kolom 'Cluster' baru:")
+df_processed.head()
+```
+Fungsi: 
+* Memberi informasi bahwa proses klasterisasi berhasil.
+* Menampilkan contoh hasil klasterisasi pada 5 baris pertama.
+
+### Program 13 - Visualisasi Cluster dengan PCA 2D
+```python
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+X = df_processed.drop(columns=['Cluster'])
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+df_pca_2d = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
+df_pca_2d['Cluster'] = df_processed['Cluster']
+plt.figure(figsize=(10, 8))
+sns.scatterplot(
+    x='PC1',
+    y='PC2',
+    hue='Cluster',
+    palette='viridis',
+    data=df_pca_2d,
+    legend='full',
+    alpha=0.7
+)
+plt.title('Visualisasi Klaster Aglomeratif (PCA 2D)')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.grid(True)
+plt.show()
+```
+<img width="868" height="703" alt="image" src="https://github.com/user-attachments/assets/88902cdb-5436-41e9-8995-e84e53a100e6" />
+
+Fungsi:
+* Mengubah data berdimensi tinggi menjadi 2 dimensi menggunakan PCA.
+* Memvisualisasikan hasil clustering dengan diagram scatter 2D.
+* Melihat apakah cluster yang terbentuk oleh Agglomerative Clustering terpisah dengan baik di ruang PCA.
+* Memberikan gambaran intuitif tentang struktur data setelah clustering.
+
+Manfaat:
+* Mengetahui apakah cluster terpisah dengan jelas atau saling overlap.
+* Mengevaluasi kualitas clustering secara visual.
+* Menjadi bukti pendukung laporan analisis atau penelitian.
+* Memahami bentuk distribusi data di ruang PCA.
+
+Program 14 - 
+
 
 
 
